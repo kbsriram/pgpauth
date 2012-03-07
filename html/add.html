@@ -1,0 +1,30 @@
+<html lang="en">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+    <meta name="format-detection" content="telephone=no"/>
+    <link rel="stylesheet" href="static/css/master.css"/>
+    <title>Add a key | OpenPGPAuth</title>
+  </head>
+  <body>
+    <div class="main">
+      <div class="header">
+        <div class="htitle"><a href="/">OpenPGPAuth</a></div>
+        <div class="hlinks">
+          <div class="hlink br"><a href="/">Search</a></div>
+          <div class="hlink br">Add a key</div>
+          <div class="hlink br"><a href="del.html">Remove a key</a></div>
+          <div class="hlink br"><a href="api.html">API</a></div>
+          <div class="hlink"><a rel="author" href="about.html">About</a></div>
+        </div>
+      </div>
+      <div class="addbox">
+        <form method="post" action="/add_cert">
+          <p><textarea cols="65" autocomplete="off" autocorrect="off" spellcheck="false" name="pubkey" placeholder="Please paste an ASCII armored PGP key here"></textarea></p>
+          <p><input type="submit" name="Add Public Key" value="Add Public Key"/></p>
+
+        </form>
+      </div>
+    </div>
+  </body>
+</html>

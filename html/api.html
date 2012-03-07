@@ -1,0 +1,182 @@
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+    <meta name="format-detection" content="telephone=no"/>
+    <link rel="stylesheet" href="static/css/master.css"/>
+    <title>API | OpenPGPAuth</title>
+  </head>
+  <body>
+    <div class="main">
+      <div class="header">
+        <div class="htitle"><a href="/">OpenPGPAuth</a></div>
+        <div class="hlinks">
+          <div class="hlink br"><a href="/">Search</a></div>
+          <div class="hlink br"><a href="add.html">Add a key</a></div>
+          <div class="hlink br"><a href="del.html">Remove a key</a></div>
+          <div class="hlink br">API</div>
+          <div class="hlink"><a rel="author" href="about.html">About</a></div>
+        </div>
+
+      </div>
+      <div class="textbox">
+        <p>The OpenPGPAuth API provides several ways to <a href="#search">search for keys</a>, a POST <a href="#add">endpoint to add new keys</a>, and a POST <a href="#remove">endpoint to remove keys</a>. Adding or removing keys starts an OAuth mediated step, where the site confirms the UserID information in the key before doing anything.</p>
+
+        <div class="subhead"><a name="search">Search for keys</a></div>
+        <p>Search for keys with GET or POST calls to <tt>https://pgpauth.appspot.com/pks/lookup</tt></p>
+
+        <div class="subsubhead">Examples:</div>
+        <p>Return an HTML page for a key from a fingerprint.<br/>
+          <tt><a href="https://pgpauth.appspot.com/pks/lookup?q=826a76430375fcc21daf62d6ef640a9804e1e934">/pks/lookup?q=826a76430375fcc21daf62d6ef640a9804e1e934</a></tt>
+        </p>
+        <p>Return the same page but search with a <a href="#purl">Profile URL.</a><br/>
+            <tt><a href="https://pgpauth.appspot.com/pks/lookup?q=https%3A%2F%2Ftwitter.com%2Fkbsriram">/pks/lookup?q=https://twitter.com/kbsriram</a></tt>
+        </p>
+
+        <p>Return the information as a JSON object.<br/>
+            <tt><a href="https://pgpauth.appspot.com/pks/lookup?f=json&amp;q=https%3A%2F%2Ftwitter.com%2Fkbsriram">/pks/lookup?f=json&amp;q=https://twitter.com/kbsriram</a></tt>
+        </p>
+
+        <p>Just return the ASCII-armored PGP key itself.<br/>
+            <tt><a href="https://pgpauth.appspot.com/pks/lookup?f=pgp&amp;q=https%3A%2F%2Ftwitter.com%2Fkbsriram">/pks/lookup?f=pgp&amp;q=https://twitter.com/kbsriram</a></tt>
+        </p>
+
+        <div class="subsubhead">Parameters:</div>
+
+        <p><b><tt>q</tt></b><br/>
+        This parameter is required, and its value is used as a search term. The search term may be:
+        </p>
+          <p>
+          1. A complete hexadecimal fingerprint.<br/>
+          2. A hexadecimal (32bit) keyid.<br/>
+          3. A complete email address. OpenPGPAuth currently stores <tt>...@gmail.com</tt> and <tt>...@yahoo.com</tt> email addresses.<br/>
+          4. A <a href="#purl">profile URL</a>.<br/>
+          </p>
+
+        <p><b><tt>f</tt></b><br/>
+        This is an optional parameter, and controls the format of the results. If it is not specified, an HTML page is returned. It can take one of these values:</p>
+          <dl>
+            <dt><tt>f=json</tt></dt><dd> for a JSON object containing information about the key. For JSON formats, you may use an additional parameter <tt>callback</tt> to return a JSONP style result instead.</dd>
+            <dt><tt>f=pgp</tt></dt><dd> to directly download an ASCII-armored PGP key.</dd>
+          </dl>
+
+        <div class="subsubhead">Using HKP</div>
+        <p>
+          It also supports a small subset of the HKP protocol over SSL, which is PGP's own HTTP-based protocol to find keys from keyservers. I added it mainly to let the <tt>gpg</tt> command-line tool search and retrieve keys, though it may work for other clients. Note that it will only respond to exact searches on the email address, profile URL or fingerprint, and to a keyid search. An example search:</p>
+          <pre>
+$ gpg --keyserver hkps://pgpauth.appspot.com \
+ --search '&lt;https://twitter.com/kbsriram&gt;'
+gpg: searching for "&lt;https://twitter.com/kbsriram&gt;"
+     from hkps server pgpauth.appspot.com
+(1)	KB Sriram (Twitter key) &lt;https://twitter.com/kbsriram&gt;
+	  key 826A76430375FCC21DAF62D6EF640A9804E1E934
+...
+          </pre>
+
+
+
+        <div class="subhead"><a name="add">Add new keys</a></div>
+        <p>Add new keys for your users with a POST call to <tt>https://pgpauth.appspot.com/pks/add_cert</tt></p>
+        <p>This will also start an OAuth verification step, and the user can be returned back to your site once it is complete.</p>
+
+        <div class="subsubhead">Example:</div>
+        <p>
+          Create a button that posts a new key and returns the user to <tt>http://example.com/pgpauthcb?status=ok&amp;cbstate=nonce</tt> if the key is added successfully.
+        </p>
+<pre>
+&lt;form method="POST"
+      action="https://pgpauth.appspot.com/add_cert"&gt;
+ &lt;button type="submit"&gt;Publish your key at OpenPGPAuth&lt;/button&gt;
+  &lt;!-- the rest is invisible to the user --&gt;
+  &lt;textarea name="<b>pubkey</b>" style="display:none;"&gt;
+-----BEGIN PGP PUBLIC KEY BLOCK-----
+...
+-----END PGP PUBLIC KEY BLOCK-----
+  &lt;/textarea&gt;
+  &lt;input type="hidden" name="<b>cburl</b>" value="http://example.com/pgpauthcb"/&gt;
+  &lt;input type="hidden" name="<b>cbstate</b>" value="nonce"/&gt;
+&lt;/form&gt;
+</pre>
+
+        <div class="subsubhead">Restrictions</div>
+<p>The POST request must contain a Referer header so that OpenPGPAuth can show the hostname of the referring site during the verification step. Browsers will normally add this header automatically, and the SSL endpoint will reduce the likelihood of it being removed by an intermediate proxy. Bare IP addresses are not permitted.</p>
+
+        <div class="subsubhead">Parameters</div>
+
+        <p><b><tt>pubkey</tt></b><br/>
+          A required parameter with an ASCII-armored PGP public key as its value.<br/>
+        </p>
+
+        <p><b><tt>cburl</tt></b><br/>
+        An optional parameter whose value is a URL to redirect the user after the verification is complete. There are a few restrictions on this parameter.<br/>
+          1. It must not have any query parameters itself.<br/>
+          2. The hostname of this URL must match the referer header.<br/>
+        </p>
+        <p>
+        The user is eventually redirected back to this URL with one or more query parameters appended.
+        </p>
+        <p>The <tt>status</tt> query parameter is always added, and its value is one of:<br/>
+1. <tt>ok</tt> if everything finished correctly.<br/>
+2. <tt>cancel</tt> if the user chose not to register the key.<br/>
+3. <tt>error</tt> if there was some other type of error during the process. A query parameter <tt>message</tt> is added if there was an error.
+</p>
+<p> Finally, if you provide a <tt>cbstate</tt> parameter when you post the key, it is just returned in the <tt>cbstate</tt> parameter.
+        </p>
+
+        <p><b><tt>cbstate</tt></b><br/>
+          An optional parameter whose value is just returned as the <tt>cbstate</tt> parameter in the callback URL. This lets you maintain some state for the user, or use it as a verification token to validate the callback.
+        </p>
+        <div class="subhead"><a name="remove">Remove keys</a></div>
+        <p>Remove keys for your users with a POST call to <tt>https://pgpauth.appspot.com/pks/del_cert</tt></p>
+        <p>This will also start an OAuth verification step, and the user can be returned back to your site once it is complete.</p>
+
+        <div class="subsubhead">Example:</div>
+        <p>
+          Create a button that removes a key and returns the user to <tt>http://example.com/pgpauthcb?status=ok&amp;cbstate=nonce</tt> if the key is removed successfully.
+        </p>
+<pre>
+&lt;form method="POST" action="https://pgpauth.appspot.com/del_cert"&gt;
+  &lt;button type="submit"&gt;Remove your key from OpenPGPAuth&lt;/button&gt;
+  &lt;input type="hidden" name="<b>fp</b>"
+     value="full hex fingerprint of key"/&gt;
+  &lt;input type="hidden" name="<b>cburl</b>" value="http://localhost:9090/b.html"/&gt;
+  &lt;input type="hidden" name="<b>cbstate</b>" value="somenonce"/&gt;
+&lt;/form&gt;
+</pre>
+
+        <div class="subsubhead">Parameters:</div>
+        <p><b><tt>fp</tt></b><br/>
+          This is a required parameter whose value is the full hexadecimal fingerprint for the key to be deleted.
+        </p>
+        <p><b><tt>cburl</tt>, <tt>cbstate</tt></b><br/>
+          These are optional parameters and have the same meaning as when <a href="#add">adding keys</a>.
+        </p>
+
+        <div class="subhead"><a name="purl">Profile URLs</a></div>
+
+        <p>OpenPGPAuth associates public keys with social network identities using the idea of a <em>profile URL</em>. A profile URL is used in the UserID of a PGP key just like an email address might be used. Profile URLs are not necessarily linked to a real page on a site, but they might. The URL serves primarily to have a simple way to map an identity provider with a userid. Currently, OpenPGPAuth handles identities for Facebook, Twitter and Google+.</p>
+
+        <p>To form a profile URL for Facebook, append the facebook userid or their username to <tt>https://www.facebook.com</tt>. For instance, <tt>https://www.facebook.com/zuck</tt> or <tt>https://www.facebook.com/4</tt> are both profile URLs for <a href="https://www.facebook.com/zuck">Mark Zuckerberg</a>.</p>
+
+        <p>To form a profile URL for Twitter, append their screen name to <tt>https://twitter.com</tt>. For instance, <tt>https://twitter.com/jack</tt> is the profile URL for <a href="https://twitter.com/jack">Jack Dorsey</a>.</p>
+
+        <p>To form a profile URL for Google+, append their google+ userid to <tt>https://plus.google.com</tt>. For instance, <tt>https://plus.google.com/106189723444098348646</tt> is the profile URL for <a href="https://plus.google.com/106189723444098348646">Larry Page</a></p>
+
+        <p>Note: You can create PGP keys just as you might for email addresses, except using the profile URL in place of the email address. For example, using the command-line program <tt>gpg</tt>, you can create a PGP key for twitter as follows:
+        </p>
+          <pre>
+$ gpg --gen-key --allow-freeform-uid
+...
+Real name: <b>KB Sriram</b>
+Email address: <b>https://twitter.com/kbsriram</b>
+Comment: <b>Twitter key</b>
+You selected this USER-ID:
+    "KB Sriram (Twitter key) &lt;https://twitter.com/kbsriram&gt;"
+...
+          </pre>
+
+      </div>
+
+    </div>
+  </body>
+</html>

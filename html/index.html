@@ -1,0 +1,38 @@
+<html lang="en">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+    <meta name="format-detection" content="telephone=no"/>
+    <link rel="stylesheet" href="static/css/master.css"/>
+    <title>OpenPGPAuth</title>
+  </head>
+  <body>
+    <div class="main">
+      <div class="header">
+        <div class="htitle"><a href="/">OpenPGPAuth</a></div>
+        <div class="hlinks">
+          <div class="hlink br">Search</div>
+          <div class="hlink br"><a href="add.html">Add a key</a></div>
+          <div class="hlink br"><a href="del.html">Remove a key</a></div>
+          <div class="hlink br"><a href="api.html">API</a></div>
+          <div class="hlink"><a rel="author" href="about.html">About</a></div>
+        </div>
+
+        <div class="searchbox">
+          <form method="post" action="/pks/lookup">
+            <input autocomplete="off" autocorrect="off" spellcheck="false" placeholder="Search by email, profile or keyid" name="q" type="text"/>
+            <input type="hidden" name="header" value="yes"/>
+          </form>
+          <div class="searchexamples">
+            <p>Example queries:</p>
+            <p><tt>username@yahoo.com</tt></p>
+            <p><tt>username@gmail.com</tt></p>
+            <p><tt>https://twitter.com/name</tt></p>
+            <p><tt>https://facebook.com/id</tt></p>
+            <p><tt>https://plus.google.com/id</tt></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

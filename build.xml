@@ -1,0 +1,207 @@
+<!-- This is a template Ant file for a very basic Google AppEngine project -->
+
+<project name="pgpauth" default="war">
+
+  <!-- When you copy this template to your working directories, change the
+       value of appengine.sdk accordingly.  You may also want to use Ant's
+       property file feature, allowing each developer to have their own
+       local property file with the path to the SDK from that workspace. -->
+  <property name="appengine.sdk" location="/Users/kbs/appengine-java-sdk-1.5.3"/>
+
+  <!-- Check that the SDK value is set and seems sane, so we can give a nicer
+       error if not.  -->
+  <fail message="Please define the appengine.sdk property to point to your SDK directory">
+    <condition>
+      <not> <and>
+          <isset property="appengine.sdk"/>
+          <available file="${appengine.sdk}/config/user/ant-macros.xml"/>
+      </and> </not>
+    </condition>
+  </fail>
+
+  <!-- Pick up the Ant macros and taskdefs for App Engine -->
+  <import file="${appengine.sdk}/config/user/ant-macros.xml"/>
+
+
+  <!-- Remote debug port for dev_appserver -->
+  <property name="debug.port" value="5005"/>
+
+  <!-- HTTP port for dev_appserver -->
+  <property name="http.port" value="8080"/>
+
+  <!-- Name of log file to write logs to -->
+  <property name="log.file" value="app.log"/>
+
+  <!-- Number of days worth of logs to retrieve -->
+  <property name="log.days" value="2"/>
+
+
+  <!-- Change if you like e.g. "war" better than "www" for the output -->
+  <property name="war.dir" location="www"/>
+
+  <target name="war" depends="enhance" 
+          description="Assemble the application directory">
+    <mkdir dir="${war.dir}/WEB-INF"/>
+    <copy todir="${war.dir}">
+      <fileset dir="html">
+        <exclude name="**/.svn/**"/>
+        <exclude name="**/*~"/>
+      </fileset>
+    </copy>
+    <copy todir="${war.dir}/WEB-INF">
+      <fileset dir="src/WEB-INF">
+        <include name="*.xml"/>
+        <include name="*.properties"/>
+      </fileset>
+    </copy>
+    <enhance_war war="${war.dir}"/>
+  </target>
+
+  <target name="enhance" depends="compile"
+          description="Enhance the classes after compilation">
+    <enhance_war war="${war.dir}"/>
+  </target>
+
+  <target name="compile" depends="copyjars"
+          description="Compile the application servlet code">
+    <mkdir dir="${war.dir}/WEB-INF/classes"/>
+    <javac srcdir="src" source="1.6" target="1.6" destdir="${war.dir}/WEB-INF/classes" debug="on" includeantruntime="false">
+      <compilerarg value="-Xlint:all"/>
+      <!-- <compilerarg value="-Xlint:unchecked"/> -->
+      <classpath>
+        <fileset dir="${appengine.sdk}/lib/user">
+          <include name="*.jar"/>
+        </fileset>
+        <fileset dir="${appengine.sdk}/lib/shared">
+          <include name="*.jar"/>
+        </fileset>
+        <fileset
+            dir="src/WEB-INF/lib">
+          <include name="**/*.jar"/>
+          <exclude name="appengine-api-1.0-sdk-1.3.8.jar"/>
+        </fileset>
+      </classpath>
+    </javac>
+  </target>
+
+  <target name="copyjars">
+    <copy
+        todir="${war.dir}/WEB-INF/lib"
+        flatten="true">
+      <fileset
+          dir="${appengine.sdk}/lib/user">
+        <include name="**/*.jar"/>
+      </fileset>
+      <fileset
+          dir="src/WEB-INF/lib">
+        <include name="**/*.jar"/>
+        <exclude name="appengine-api-1.0-sdk-1.3.8.jar"/>
+      </fileset>
+    </copy>
+  </target>
+
+  <target name="clean"
+          description="Force a clean slate to rebuild">
+    <delete dir="${war.dir}"/>
+    <delete dir="test/classes"/>
+    <delete dir="test/report"/>
+  </target>
+
+  <path id="compile.class.path">
+    <fileset dir="${appengine.sdk}/lib/user">
+      <include name="*.jar"/>
+    </fileset>
+    <fileset dir="${appengine.sdk}/lib/shared">
+      <include name="*.jar"/>
+    </fileset>
+    <fileset dir="src/WEB-INF/lib">
+      <include name="**/*.jar"/>
+    </fileset>
+  </path>
+  <path id="test.class.path">
+    <path refid="compile.class.path"/>
+    <fileset dir="test/lib">
+      <include name="*.jar"/>
+    </fileset>
+    <pathelement location="${war.dir}/WEB-INF/classes"/>
+    <pathelement location="${appengine.sdk}/lib/impl/appengine-api.jar"/>
+    <pathelement location="${appengine.sdk}/lib/impl/appengine-api-labs.jar"/>
+    <pathelement location="${appengine.sdk}/lib/impl/appengine-api-stubs.jar"/>
+    <pathelement location="${appengine.sdk}/lib/testing/appengine-testing.jar"/>
+  </path>
+
+  <target name="compiletests" depends="compile">
+    <mkdir dir="test/classes"/>
+    <javac srcdir="test/src" destdir="test/classes" debug="on"
+           includeantruntime="false">
+      <classpath>
+        <path refid="test.class.path"/>
+      </classpath>
+    </javac>
+  </target>
+
+  <target name="test" depends="war,compiletests">
+    <mkdir dir="test/report"/>
+    <junit printsummary="yes" haltonfailure="yes">
+      <classpath>
+        <path refid="test.class.path"/>
+        <pathelement location="test/classes"/>
+      </classpath>
+      <formatter type="plain"/>
+      <batchtest todir="test/report">
+        <fileset dir="test/src">
+          <include name="**/C*Test.java"/>
+        </fileset>
+      </batchtest>
+    </junit>
+  </target>
+
+
+  <target name="runserver" depends="war"
+          description="Run the dev_appserver">
+    <dev_appserver war="${war.dir}" port="${http.port}" address="0.0.0.0"/>
+  </target>
+
+  <target name="dev_appserver" depends="runserver"/>
+
+  <target name="debug" depends="war" 
+          description="Launches dev_appserver with remote debugging enabled">
+    <echo message="Launching dev_appserver on Web port ${http.port}, Java remote debug port ${debug.port}"/>
+    <dev_appserver war="${war.dir}" port="${http.port}">
+      <options>
+        <arg value="--jvm_flag=-Xdebug"/>
+        <arg value="--jvm_flag=-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=${debug.port}"/>
+      </options>
+    </dev_appserver>
+  </target>
+
+
+
+  <target name="update" depends="war" 
+          description="Uploads the application, including indexes">
+    <appcfg action="update" war="${war.dir}"/>
+  </target>
+
+  <target name="update_indexes" depends="war" 
+          description="Uploads only the application's indexes">
+    <appcfg action="update_indexes" war="${war.dir}"/>
+  </target>
+
+  <target name="rollback" depends="war" 
+          description="Rolls back any in-progress application update">
+    <appcfg action="rollback" war="${war.dir}"/>
+  </target>
+
+  <target name="request_logs" 
+          description="Downloads the application's logs">
+    <appcfg action="request_logs" war="${war.dir}">
+      <options>
+        <arg value="--num_days=${log.days}"/>
+      </options>
+      <args>
+        <arg value="${log.file}"/>
+      </args>
+    </appcfg>
+  </target>
+
+</project>

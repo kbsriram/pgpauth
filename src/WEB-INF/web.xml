@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<web-app 
+   xmlns="http://java.sun.com/xml/ns/javaee" 
+   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
+   version="2.5"> 
+  <display-name>PGPAuth</display-name>
+
+  <security-constraint>
+    <web-resource-collection>
+      <url-pattern>/*</url-pattern>
+    </web-resource-collection>
+    <user-data-constraint>
+      <transport-guarantee>CONFIDENTIAL</transport-guarantee>
+    </user-data-constraint>
+  </security-constraint>
+
+  <security-constraint>
+    <web-resource-collection>
+      <url-pattern>/tasks/*</url-pattern>
+    </web-resource-collection>
+    <auth-constraint>
+      <role-name>admin</role-name>
+    </auth-constraint>
+  </security-constraint>
+
+  <servlet>
+    <servlet-name>add_cert</servlet-name>
+    <servlet-class>com.pgpauth.servlet.CAddCertificateServlet</servlet-class>
+  </servlet>
+  <servlet>
+    <servlet-name>del_cert</servlet-name>
+    <servlet-class>com.pgpauth.servlet.CDelCertificateServlet</servlet-class>
+  </servlet>
+  <servlet>
+    <servlet-name>oar</servlet-name>
+    <servlet-class>com.pgpauth.servlet.COAuthResponseServlet</servlet-class>
+  </servlet>
+  <servlet>
+    <servlet-name>revoke</servlet-name>
+    <servlet-class>com.pgpauth.servlet.CRevokePermissionsTask</servlet-class>
+  </servlet>
+
+  <servlet>
+    <servlet-name>startup</servlet-name>
+    <servlet-class>com.pgpauth.servlet.CStartupServlet</servlet-class>
+    <load-on-startup>1</load-on-startup>
+  </servlet>
+  <servlet>
+    <servlet-name>lookup</servlet-name>
+    <servlet-class>com.pgpauth.servlet.CLookupServlet</servlet-class>
+  </servlet>
+
+  <servlet-mapping>
+    <servlet-name>revoke</servlet-name>
+    <url-pattern>/tasks/revoke</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>add_cert</servlet-name>
+    <url-pattern>/add_cert</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>del_cert</servlet-name>
+    <url-pattern>/del_cert</url-pattern>
+  </servlet-mapping>
+
+  <servlet-mapping>
+    <servlet-name>oar</servlet-name>
+    <url-pattern>/google/oauth2</url-pattern>
+    <url-pattern>/facebook/oauth2</url-pattern>
+    <url-pattern>/yahoo/oauth1a</url-pattern>
+    <url-pattern>/twitter/oauth1a</url-pattern>
+  </servlet-mapping>
+
+  <servlet-mapping>
+    <servlet-name>lookup</servlet-name>
+    <url-pattern>/pks/lookup</url-pattern>
+  </servlet-mapping>
+
+</web-app>

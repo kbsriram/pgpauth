@@ -1,0 +1,38 @@
+<html lang="en">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+    <meta name="format-detection" content="telephone=no"/>
+    <link rel="stylesheet" href="static/css/master.css"/>
+    <title>Remove a key | OpenPGPAuth</title>
+  </head>
+  <body>
+    <div class="main">
+      <div class="header">
+        <div class="htitle"><a href="/">OpenPGPAuth</a></div>
+
+        <div class="hlinks">
+          <div class="hlink br"><a href="/">Search</a></div>
+          <div class="hlink br"><a href="add.html">Add a key</a></div>
+          <div class="hlink br">Remove a key</div>
+          <div class="hlink br"><a href="api.html">API</a></div>
+          <div class="hlink"><a rel="author" href="about.html">About</a></div>
+        </div>
+      </div>
+
+      <div class="delbox">
+        <form method="post" action="/del_cert">
+          <input type="text" autocomplete="off" autocorrect="off" spellcheck="false" id="fp" placeholder="Enter fingerprint of key" name="fp" size="65"/><br/>
+          <input type="submit" name="Delete" value="Delete key with this fingerprint"/>
+        </form>
+      </div>
+    </div>
+  </body>
+</html>
+
+
+
+
+
+
+

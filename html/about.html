@@ -1,0 +1,56 @@
+<html lang="en"
+      xmlns="http://www.w3.org/1999/xhtml"
+>
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+    <meta name="format-detection" content="telephone=no"/>
+    <link rel="stylesheet" href="static/css/master.css"/>
+    <title>About | OpenPGPAuth</title>
+  </head>
+  <body>
+    <div class="main">
+      <div class="header">
+        <div class="htitle"><a href="/">OpenPGPAuth</a></div>
+        <div class="hlinks">
+          <div class="hlink br"><a href="/">Search</a></div>
+          <div class="hlink br"><a href="add.html">Add a key</a></div>
+          <div class="hlink br"><a href="del.html">Remove a key</a></div>
+          <div class="hlink br"><a href="api.html">API</a></div>
+          <div class="hlink">About</div>
+        </div>
+
+      </div>
+      <div class="textbox">
+
+        <p>
+          This little site is effectively just a PGP key server, except it uses OAuth to verify PGP userids before adding them into its database.</p>
+        <p>So it behaves as a database of OAuth-verified PGP public keys for (say) facebook, twitter, g+ or gmail users.  It also has <a href="api.html">convenient web APIs</a> for applications to add or search for keys, which I hope makes it more web-developer friendly.
+        </p>
+        <p><img src="https://fbcdn-sphotos-a.akamaihd.net/hphotos-ak-snc6/230110_7495023070_531643070_319027_1968_n.jpg" style="height: 12em; float: left; margin-right: 1em; " alt="KB Sriram"/>
+        <a rel="me" href="https://plus.google.com/102207019656909757485" title="KB Sriram at G+">I'm KB</a>, a software developer. I wrote this service as small step to help create systems that let us communicate online more securely and privately, with our online identities, and over existing services.
+        </p>
+        <p>
+For instance, could a tool allow facebook users exchange <a href="http://forums.dropbox.com/topic.php?id=18229">encrypted content</a> via the sharer's dropbox account? If the sharer uses the public keys of the recipients, nobody but the designated recipients can decrypt it. This would let us securely share sensitive material like our children's photos, medical information etc. We could still use our existing online identities, but keep the data on storage we control, and keep the contents secure even from the provider.</p>
+
+        <p>It would be nice if there was an existing, reliable way for an identity provider to publish a public key for their users. But could a third-party service use the more common <a href="http://en.wikipedia.org/wiki/OAuth">OAuth</a> to bridge the gap instead? By verifying user id data in a PGP key against information available with OAuth, it would at least avoid casually inserting forged user ids into the system.
+        </p>
+
+        <p>Which finally brings me to this site.  I coded a simple appengine service that does just that. It's a place to store and find PGP keys for online identities. However, it adds an OAuth verification step before adding a key, so while you'd still want to independently verify PGP keys the usual way, it raises the bar by that much.
+        </p>
+        <p>In addition, the <a href="https://github.com/kbsriram/pgpauth">code is on github</a>. You are free to reuse any bits in your own services if you prefer, make it better, anything really.
+        </p>
+
+        <p>The site currently handles PGP public keys with <a href="https://mail.google.com">Gmail</a> or <a href="https://mail.yahoo.com">Yahoo</a> email addresses, and <a href="https://www.facebook.com">Facebook</a>, <a href="https://twitter.com">Twitter</a> or <a href="https://plus.google.com">Google+</a> keys that use <a href="api.html#purl">profile URLs</a>.
+        </p>
+
+        <p>As our online footprint becomes increasingly public, privacy becomes scarcer and hence valuable. I believe we should have simple and convenient ways to control who can really see what we share online, when we think it necessary. And it should not need to rely entirely on the policies of a service provider.
+        </p>
+
+        <p>Perhaps a place to host PGP public keys validated via OAuth is a small piece of the puzzle, and this is my effort to provide that piece.
+        </p>
+
+      </div>
+    </div>
+  </body>
+</html>
