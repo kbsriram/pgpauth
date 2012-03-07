@@ -14,6 +14,7 @@ import org.bouncycastle.openpgp.PGPSignature;
 import org.bouncycastle.openpgp.PGPException;
 import org.bouncycastle.openpgp.operator.PGPContentVerifierBuilderProvider;
 import org.bouncycastle.openpgp.operator.bc.BcPGPContentVerifierBuilderProvider;
+import org.bouncycastle.bcpg.ArmoredOutputStream;
 
 
 import com.google.appengine.api.datastore.Entity;
@@ -31,6 +32,7 @@ import java.util.ArrayList;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.math.BigInteger;
 
 public class CVerifyCertificate
@@ -44,7 +46,13 @@ public class CVerifyCertificate
         // 1) Add the base entity, keyed by fingerprint.
         Key k = keyFromFingerprint(info.getFingerprint());
         Entity ke = new Entity(k);
-        ke.setUnindexedProperty(CDATA, new Text(info.getCertificateData()));
+        info.setCertificateData
+            (normalize
+             (info.getCertificateData()));
+
+        ke.setUnindexedProperty
+            (CDATA,
+             new Text(info.getCertificateData()));
         ke.setUnindexedProperty(TS, info.getVerifyTimestamp());
         String ppic = info.getProfileImage();
         if (!Utils.isEmpty(ppic)) {
@@ -316,6 +324,31 @@ public class CVerifyCertificate
         }
     }
 
+    // Given an armor'ed string, create a new one out of it.
+    // this prevents extraneous material from getting added.
+    private final static String normalize(String orig)
+    {
+        try {
+            PGPPublicKeyRingCollection pkrc =
+                new PGPPublicKeyRingCollection
+                (PGPUtil.getDecoderStream
+                 (new ByteArrayInputStream
+                  (orig.getBytes("utf-8"))));
+
+            ByteArrayOutputStream bout =
+                new ByteArrayOutputStream();
+            ArmoredOutputStream aout = new ArmoredOutputStream(bout);
+            pkrc.encode(aout);
+            aout.close();
+            return new String(bout.toByteArray(), "utf-8");
+        }
+        catch (PGPException pge) {
+            throw new RuntimeException("Unexpected", pge);
+        }
+        catch (IOException ioe) {
+            throw new RuntimeException("Unexpected", ioe);
+        }
+    }
 
     private final static Info makeInfo
         (final String uid, final String orig, final String fp)
@@ -399,6 +432,8 @@ public class CVerifyCertificate
             return m_uid.getProfileLinkName();
         }
 
+        private void setCertificateData(String s)
+        { m_origcert = s; }
         public void setProviderDisplayName(String s)
         { m_pdn = s; }
         public long getVerifyTimestamp()
@@ -416,7 +451,7 @@ public class CVerifyCertificate
         public String getCertificateData()
         { return m_origcert; }
         private final CUserID m_uid;
-        private final String m_origcert;
+        private String m_origcert;
         private final String m_fp;
         private String m_ppic;
         private String m_pdn;
